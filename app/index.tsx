@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 type Roles = "system" | "user" | "assistant";
 
@@ -26,6 +27,7 @@ export default function Page() {
   ]);
 
   async function handleSubmit() {
+    console.log("submittin'");
     const newMessage: Message = { role: "user", content: input };
     setInput("");
     const newMessages = [...messages, newMessage];
@@ -68,6 +70,7 @@ export default function Page() {
             const content = data.choices[0].delta.content;
             if (!content) return;
             stream += content;
+            console.log("stream: ", stream);
 
             setMessages((messages) => [
               ...messages.slice(0, -1),
@@ -88,49 +91,51 @@ export default function Page() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.heading}>chat.giving</Text>
-      <KeyboardAvoidingView
-        style={styles.main}
-        behavior="padding"
-        keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
-      >
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.responseContainer}
-          contentContainerStyle={{
-            gap: 12,
-          }}
+    <SafeAreaProvider>
+      <View style={styles.container}>
+        <Text style={styles.heading}>chat.giving</Text>
+        <KeyboardAvoidingView
+          style={styles.main}
+          behavior="padding"
+          keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
         >
-          {messages.map((message, index) => (
-            <View
-              key={index}
-              style={[
-                styles.message,
-                message.role === "system"
-                  ? { display: "none" }
-                  : message.role === "user"
-                  ? { backgroundColor: "#1d89fe" }
-                  : { backgroundColor: "#262529" },
-              ]}
-            >
-              <Text style={[styles.messageText, { fontWeight: "bold" }]}>
-                {message.role}
-              </Text>
-              <Text style={styles.messageText}>{message.content}</Text>
-            </View>
-          ))}
-        </ScrollView>
-        <TextInput
-          ref={inputRef}
-          autoFocus={true}
-          style={styles.input}
-          value={input}
-          onChangeText={setInput}
-          onSubmitEditing={handleSubmit}
-        ></TextInput>
-      </KeyboardAvoidingView>
-    </View>
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.responseContainer}
+            contentContainerStyle={{
+              gap: 12,
+            }}
+          >
+            {messages.map((message, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.message,
+                  message.role === "system"
+                    ? { display: "none" }
+                    : message.role === "user"
+                    ? { backgroundColor: "#1d89fe" }
+                    : { backgroundColor: "#262529" },
+                ]}
+              >
+                <Text style={[styles.messageText, { fontWeight: "bold" }]}>
+                  {message.role}
+                </Text>
+                <Text style={styles.messageText}>{message.content}</Text>
+              </View>
+            ))}
+          </ScrollView>
+          <TextInput
+            ref={inputRef}
+            autoFocus={true}
+            style={styles.input}
+            value={input}
+            onChangeText={setInput}
+            onSubmitEditing={handleSubmit}
+          ></TextInput>
+        </KeyboardAvoidingView>
+      </View>
+    </SafeAreaProvider>
   );
 }
 
