@@ -38,14 +38,15 @@ export default function Page() {
         messages: newMessages,
       }),
     });
-    setMessages((currentMessages) => [
-      ...currentMessages,
-      { role: "assistant", content: "" },
-    ]);
 
     if (response.body) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let stream = "";
+      setMessages((messages) => [
+        ...messages,
+        { role: "assistant", content: "" },
+      ]);
 
       while (true) {
         const { done, value } = await reader.read();
@@ -63,14 +64,21 @@ export default function Page() {
 
             const data = JSON.parse(part.slice(6));
             const content = data.choices[0].delta.content;
-            console.log(content);
+            if (!content) return;
+            stream += content;
+
+            setMessages((messages) => [
+              ...messages.slice(0, -1),
+              {
+                role: "assistant",
+                content: stream,
+              },
+            ]);
           } catch (error) {
             buffer += part;
           }
         });
       }
-      console.log(messages);
-      // console.log(messages[messages.length - 1]);
     }
     inputRef.current?.focus();
   }
