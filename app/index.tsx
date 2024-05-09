@@ -1,20 +1,63 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+
+type Roles = "system" | "user" | "assistant";
+
+interface Message {
+  role: Roles;
+  content: string;
+}
 
 export default function Page() {
-  async function fetchHello() {
-    const response = await fetch("/hello");
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "system", content: "You are a helpful assistant." },
+  ]);
+
+  async function handleSubmit() {
+    setMessages((messages) => [...messages, { role: "user", content: input }]);
+
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [...messages, { role: "user", content: input }],
+      }),
+    });
+
     const data = await response.json();
-    alert("Hello " + data.hello);
+    setMessages((messages) => [...messages, data]);
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>chat.giving</Text>
       <View style={[styles.main, styles.border]}>
-        <View style={[styles.border, styles.responseContainer]}></View>
+        <ScrollView style={[styles.border, styles.responseContainer]}>
+          {messages.map((message, index) => (
+            <View
+              key={index}
+              style={[
+                styles.border,
+                message.role === "system"
+                  ? { display: "none" }
+                  : message.role === "user"
+                  ? { backgroundColor: "grey" }
+                  : { backgroundColor: "lightblue" },
+              ]}
+            >
+              <Text>{message.role}</Text>
+              <Text>{message.content}</Text>
+            </View>
+          ))}
+        </ScrollView>
         <TextInput
           style={[styles.input, styles.border]}
-          onSubmitEditing={fetchHello}
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={handleSubmit}
         ></TextInput>
       </View>
     </View>
