@@ -1,5 +1,13 @@
 import { useState, useRef } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 type Roles = "system" | "user" | "assistant";
 
@@ -39,7 +47,11 @@ export default function Page() {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>chat.giving</Text>
-      <View style={styles.main}>
+      <KeyboardAvoidingView
+        style={styles.main}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
+      >
         <ScrollView
           style={styles.responseContainer}
           contentContainerStyle={{
@@ -73,7 +85,7 @@ export default function Page() {
           onChangeText={setInput}
           onSubmitEditing={handleSubmit}
         ></TextInput>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
