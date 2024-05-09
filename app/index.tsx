@@ -1,43 +1,52 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
 
 export default function Page() {
+  async function fetchHello() {
+    const response = await fetch("/hello");
+    const data = await response.json();
+    alert("Hello " + data.hello);
+  }
+
   return (
     <View style={styles.container}>
-      <View style={styles.main}>
-        <Pressable
-          onPress={async () => {
-            const response = await fetch("/hello");
-            const data = await response.json();
-            alert("Hello " + data.hello);
-          }}
-        >
-          <Text>Press me</Text>
-        </Pressable>
-        <Text style={styles.title}>Hello World</Text>
-        <Text style={styles.subtitle}>This is the first page of your app.</Text>
+      <Text style={styles.heading}>chat.giving</Text>
+      <View style={[styles.main, styles.border]}>
+        <View style={[styles.border, styles.responseContainer]}></View>
+        <TextInput
+          style={[styles.input, styles.border]}
+          onSubmitEditing={fetchHello}
+        ></TextInput>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  heading: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
   container: {
     flex: 1,
     alignItems: "center",
-    padding: 24,
+    padding: 12,
+    gap: 12,
+  },
+  border: {
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
   },
   main: {
     flex: 1,
-    justifyContent: "center",
     maxWidth: 960,
-    marginHorizontal: "auto",
+    width: "100%",
+    gap: 12,
   },
-  title: {
-    fontSize: 64,
-    fontWeight: "bold",
+  input: {
+    width: "100%",
   },
-  subtitle: {
-    fontSize: 36,
-    color: "#38434D",
+  responseContainer: {
+    flex: 1,
   },
 });
