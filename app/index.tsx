@@ -18,6 +18,8 @@ interface Message {
 
 export default function Page() {
   const inputRef = useRef<TextInput>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     { role: "system", content: "You are a helpful assistant." },
@@ -74,6 +76,8 @@ export default function Page() {
                 content: stream,
               },
             ]);
+
+            scrollViewRef.current?.scrollToEnd({ animated: true });
           } catch (error) {
             buffer += part;
           }
@@ -92,6 +96,7 @@ export default function Page() {
         keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
       >
         <ScrollView
+          ref={scrollViewRef}
           style={styles.responseContainer}
           contentContainerStyle={{
             gap: 12,
