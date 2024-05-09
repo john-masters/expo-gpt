@@ -66,8 +66,8 @@ export default function Page() {
                 message.role === "system"
                   ? { display: "none" }
                   : message.role === "user"
-                  ? { backgroundColor: "#1a89ff" }
-                  : { backgroundColor: "#26262a" },
+                  ? { backgroundColor: "#1d89fe" }
+                  : { backgroundColor: "#262529" },
               ]}
             >
               <Text style={[styles.messageText, { fontWeight: "bold" }]}>
