@@ -38,9 +38,40 @@ export default function Page() {
         messages: newMessages,
       }),
     });
+    setMessages((currentMessages) => [
+      ...currentMessages,
+      { role: "assistant", content: "" },
+    ]);
 
-    const data = await response.json();
-    setMessages((currentMessages) => [...currentMessages, data]);
+    if (response.body) {
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = decoder.decode(value, { stream: true });
+        const parts = text.trim().split("\n\n");
+
+        let buffer = "";
+        parts.forEach((part) => {
+          try {
+            if (buffer) {
+              part = buffer + part;
+              buffer = "";
+            }
+
+            const data = JSON.parse(part.slice(6));
+            const content = data.choices[0].delta.content;
+            console.log(content);
+          } catch (error) {
+            buffer += part;
+          }
+        });
+      }
+      console.log(messages);
+      // console.log(messages[messages.length - 1]);
+    }
     inputRef.current?.focus();
   }
 

@@ -10,10 +10,30 @@ export async function POST(request: Request) {
     body: JSON.stringify({
       model: "gpt-4-turbo",
       messages: body.messages,
+      stream: true,
     }),
   });
-  const data = await response.json();
-  const completion = data.choices[0].message;
 
-  return Response.json(completion);
+  if (!response.body) return new Response(null, { status: 204 });
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        const text = decoder.decode(value, { stream: true });
+        controller.enqueue(text);
+      }
+      controller.close();
+    },
+  });
+
+  return new Response(stream, {
+    headers: { "Content-Type": "text/plain" },
+  });
 }
