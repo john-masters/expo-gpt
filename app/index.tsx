@@ -49,7 +49,7 @@ export default function Page() {
       <Text style={styles.heading}>chat.giving</Text>
       <KeyboardAvoidingView
         style={styles.main}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior="padding"
         keyboardVerticalOffset={Platform.OS === "ios" ? 30 : 0}
       >
         <ScrollView
