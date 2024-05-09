@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useRef } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 type Roles = "system" | "user" | "assistant";
@@ -9,13 +9,17 @@ interface Message {
 }
 
 export default function Page() {
+  const inputRef = useRef<TextInput>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     { role: "system", content: "You are a helpful assistant." },
   ]);
 
   async function handleSubmit() {
-    setMessages((messages) => [...messages, { role: "user", content: input }]);
+    const newMessage: Message = { role: "user", content: input };
+    setInput("");
+    const newMessages = [...messages, newMessage];
+    setMessages(newMessages);
 
     const response = await fetch("/chat", {
       method: "POST",
@@ -23,38 +27,48 @@ export default function Page() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        messages: [...messages, { role: "user", content: input }],
+        messages: newMessages,
       }),
     });
 
     const data = await response.json();
-    setMessages((messages) => [...messages, data]);
+    setMessages((currentMessages) => [...currentMessages, data]);
+    inputRef.current?.focus();
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>chat.giving</Text>
-      <View style={[styles.main, styles.border]}>
-        <ScrollView style={[styles.border, styles.responseContainer]}>
+      <View style={styles.main}>
+        <ScrollView
+          style={styles.responseContainer}
+          contentContainerStyle={{
+            gap: 12,
+          }}
+        >
           {messages.map((message, index) => (
             <View
               key={index}
               style={[
-                styles.border,
+                styles.message,
                 message.role === "system"
                   ? { display: "none" }
                   : message.role === "user"
-                  ? { backgroundColor: "grey" }
-                  : { backgroundColor: "lightblue" },
+                  ? { backgroundColor: "#1a89ff" }
+                  : { backgroundColor: "#26262a" },
               ]}
             >
-              <Text>{message.role}</Text>
-              <Text>{message.content}</Text>
+              <Text style={[styles.messageText, { fontWeight: "bold" }]}>
+                {message.role}
+              </Text>
+              <Text style={styles.messageText}>{message.content}</Text>
             </View>
           ))}
         </ScrollView>
         <TextInput
-          style={[styles.input, styles.border]}
+          ref={inputRef}
+          autoFocus={true}
+          style={styles.input}
           value={input}
           onChangeText={setInput}
           onSubmitEditing={handleSubmit}
@@ -68,17 +82,14 @@ const styles = StyleSheet.create({
   heading: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "white",
   },
   container: {
     flex: 1,
     alignItems: "center",
     padding: 12,
     gap: 12,
-  },
-  border: {
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
+    backgroundColor: "black",
   },
   main: {
     flex: 1,
@@ -88,8 +99,20 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
+    padding: 12,
+    borderWidth: 1,
+    borderRadius: 8,
+    borderColor: "white",
+    color: "white",
   },
   responseContainer: {
     flex: 1,
+  },
+  message: {
+    padding: 12,
+    borderRadius: 8,
+  },
+  messageText: {
+    color: "white",
   },
 });
