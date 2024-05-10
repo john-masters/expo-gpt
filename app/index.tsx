@@ -34,7 +34,7 @@ export default function Page() {
     setMessages(newMessages);
 
     let stream = "";
-    const url = "http:localhost:8081/chat";
+    const url = Platform.OS === "web" ? "/chat" : "http://localhost:8081/chat";
 
     try {
       const es = new EventSource(url, {
