@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import EventSource from "react-native-sse";
 
 type Roles = "system" | "user" | "assistant";
 
@@ -27,13 +28,14 @@ export default function Page() {
   ]);
 
   async function handleSubmit() {
-    console.log("submittin'");
     const newMessage: Message = { role: "user", content: input };
     setInput("");
     const newMessages = [...messages, newMessage];
     setMessages(newMessages);
 
-    const response = await fetch("/chat", {
+    let stream = "";
+
+    const es = new EventSource("/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,50 +45,45 @@ export default function Page() {
       }),
     });
 
-    if (response.body) {
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let stream = "";
+    es.addEventListener("open", (event) => {
       setMessages((messages) => [
         ...messages,
         { role: "assistant", content: "" },
       ]);
+    });
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const text = decoder.decode(value, { stream: true });
-        const parts = text.trim().split("\n\n");
+    es.addEventListener("message", (event) => {
+      if (!event.data) return;
 
-        let buffer = "";
-        parts.forEach((part) => {
-          try {
-            if (buffer) {
-              part = buffer + part;
-              buffer = "";
-            }
-
-            const data = JSON.parse(part.slice(6));
-            const content = data.choices[0].delta.content;
-            if (!content) return;
-            stream += content;
-            console.log("stream: ", stream);
-
-            setMessages((messages) => [
-              ...messages.slice(0, -1),
-              {
-                role: "assistant",
-                content: stream,
-              },
-            ]);
-
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          } catch (error) {
-            buffer += part;
-          }
-        });
+      if (event.data === "[DONE]") {
+        es.close();
+        return;
       }
-    }
+
+      const data = JSON.parse(event.data);
+      const content = data.choices[0].delta.content;
+      if (!content) return;
+      stream += content;
+
+      setMessages((messages) => [
+        ...messages.slice(0, -1),
+        {
+          role: "assistant",
+          content: stream,
+        },
+      ]);
+
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    });
+
+    es.addEventListener("error", (event) => {
+      if (event.type === "error") {
+        console.error("Connection error:", event.message);
+      } else if (event.type === "exception") {
+        console.error("Error:", event.message, event.error);
+      }
+    });
+
     inputRef.current?.focus();
   }
 

@@ -34,6 +34,6 @@ export async function POST(request: Request) {
   });
 
   return new Response(stream, {
-    headers: { "Content-Type": "text/plain" },
+    headers: { "Content-Type": "text/event-stream" },
   });
 }
