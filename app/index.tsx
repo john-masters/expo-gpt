@@ -34,57 +34,63 @@ export default function Page() {
     setMessages(newMessages);
 
     let stream = "";
+    const url = "http:localhost:8081/chat";
 
-    const es = new EventSource("/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        messages: newMessages,
-      }),
-    });
-
-    es.addEventListener("open", () => {
-      setMessages((messages) => [
-        ...messages,
-        { role: "assistant", content: "" },
-      ]);
-    });
-
-    es.addEventListener("message", (event) => {
-      if (!event.data) return;
-
-      if (event.data === "[DONE]") {
-        es.close();
-        return;
-      }
-
-      const data = JSON.parse(event.data);
-      const content = data.choices[0].delta.content;
-      if (!content) return;
-      stream += content;
-
-      setMessages((messages) => [
-        ...messages.slice(0, -1),
-        {
-          role: "assistant",
-          content: stream,
+    try {
+      const es = new EventSource(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      ]);
+        body: JSON.stringify({
+          messages: newMessages,
+        }),
+        lineEndingCharacter: "\n",
+      });
 
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    });
+      es.addEventListener("open", () => {
+        setMessages((messages) => [
+          ...messages,
+          { role: "assistant", content: "" },
+        ]);
+      });
 
-    es.addEventListener("error", (event) => {
-      if (event.type === "error") {
-        console.error("Connection error:", event.message);
-      } else if (event.type === "exception") {
-        console.error("Error:", event.message, event.error);
-      }
-    });
+      es.addEventListener("message", (event) => {
+        if (!event.data) return;
 
-    inputRef.current?.focus();
+        if (event.data === "[DONE]") {
+          es.removeAllEventListeners();
+          es.close();
+          inputRef.current?.focus();
+          return;
+        }
+
+        const data = JSON.parse(event.data);
+        const content = data.choices[0].delta.content;
+        if (!content) return;
+        stream += content;
+
+        setMessages((messages) => [
+          ...messages.slice(0, -1),
+          {
+            role: "assistant",
+            content: stream,
+          },
+        ]);
+
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      });
+
+      es.addEventListener("error", (event) => {
+        if (event.type === "error") {
+          console.error("Connection error:", event.message);
+        } else if (event.type === "exception") {
+          console.error("Error:", event.message, event.error);
+        }
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
 
   return (
