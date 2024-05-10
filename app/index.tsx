@@ -45,7 +45,7 @@ export default function Page() {
       }),
     });
 
-    es.addEventListener("open", (event) => {
+    es.addEventListener("open", () => {
       setMessages((messages) => [
         ...messages,
         { role: "assistant", content: "" },
@@ -115,9 +115,9 @@ export default function Page() {
                     : { backgroundColor: "#262529" },
                 ]}
               >
-                <Text style={[styles.messageText, { fontWeight: "bold" }]}>
+                {/* <Text style={[styles.messageText, { fontWeight: "bold" }]}>
                   {message.role}
-                </Text>
+                </Text> */}
                 <Text style={styles.messageText}>{message.content}</Text>
               </View>
             ))}
