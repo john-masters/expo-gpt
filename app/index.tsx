@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import EventSource from "react-native-sse";
+import Markdown from "react-native-markdown-display";
 
 type Roles = "system" | "user" | "assistant";
 
@@ -121,10 +122,7 @@ export default function Page() {
                     : { backgroundColor: "#262529" },
                 ]}
               >
-                {/* <Text style={[styles.messageText, { fontWeight: "bold" }]}>
-                  {message.role}
-                </Text> */}
-                <Text style={styles.messageText}>{message.content}</Text>
+                <Markdown style={mdStyles}>{message.content}</Markdown>
               </View>
             ))}
           </ScrollView>
@@ -176,7 +174,45 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
   },
-  messageText: {
-    color: "white",
+});
+
+const mdStyles = StyleSheet.create({
+  body: {
+    color: "#FFFFFF",
+    lineHeight: 24,
+  },
+  heading1: {
+    fontSize: 32,
+  },
+  heading2: {
+    fontSize: 24,
+  },
+  heading3: {
+    fontSize: 18,
+  },
+  heading4: {
+    fontSize: 16,
+  },
+  heading5: {
+    fontSize: 13,
+  },
+  heading6: {
+    fontSize: 11,
+  },
+  code_inline: {
+    backgroundColor: "transparent",
+    paddingVertical: 1,
+    paddingHorizontal: 2,
+  },
+  code_block: {
+    backgroundColor: "transparent",
+    paddingVertical: 2,
+  },
+  fence: {
+    backgroundColor: "transparent",
+    paddingVertical: 2,
+  },
+  blockquote: {
+    backgroundColor: "transparent",
   },
 });
